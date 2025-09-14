@@ -12,7 +12,20 @@ function App() {
   const [tasks, setTasks] = useState<taskListType>(initialTaskList);
   const [filter, setFilter] = useState<"daily" | "weekly" | "monthly">("daily");
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [dailyIndex, setDailyIndex] = useState(0);
+  const [weeklyIndex, setWeeklyIndex] = useState(0);
+  const [monthlyIndex, setMonthlyIndex] = useState(0);
+
+  const currentIndex =
+    (filter === "daily" && dailyIndex) ||
+    (filter === "weekly" && weeklyIndex) ||
+    (filter === "monthly" && monthlyIndex) ||
+    0;
+  const setCurrentIndex =
+    (filter === "daily" && setDailyIndex) ||
+    (filter === "weekly" && setWeeklyIndex) ||
+    (filter === "monthly" && setMonthlyIndex) ||
+    (() => {});
 
   const totalAmountofDailyTasks = taskList.filter(
     (task) => task.frequency === "daily"
@@ -42,8 +55,6 @@ function App() {
 
         const toggleCompleted = !t.completed;
 
-        // if completing → set dateCompleted
-        // if undoing → reset to null
         return {
           ...t,
           completed: toggleCompleted,
@@ -80,15 +91,16 @@ function App() {
           Display task description
             onClick: completeTask(task_id)
         */}
-      <div className="flex flex-col justify-center h-[690px]">
+      <div className="flex flex-col justify-center h-[610px]">
         <div className="flex flex-row justify-center gap-4">
           {["daily", "weekly", "monthly"].map((option) => (
             <div>
               <button
+                key={option}
                 className="w-[25vw] rounded bg-blue-500 text-white"
-                onClick={() =>
-                  setFilter(option as "daily" | "weekly" | "monthly")
-                }
+                onClick={() => {
+                  setFilter(option as "daily" | "weekly" | "monthly");
+                }}
               >
                 {option}
               </button>
@@ -99,8 +111,8 @@ function App() {
           completeTask={completeTask}
           tasks={tasks}
           taskFilter={filter}
-          setCurrentIndex={setCurrentIndex}
           currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
         />
       </div>
 
@@ -112,7 +124,7 @@ function App() {
         <h2 className="text-2xl font-bold mb-2">Other User Actions</h2>
         <button
           className="mt-2 px-4 py-2 rounded bg-blue-500 text-white"
-          onClick={() => completeTask(1)} // Example: Other user completed task with ID 1
+          onClick={() => completeTask(currentIndex)} // Example: Other user completed task with ID 1
         >
           Somone Else Completed "{tasks[currentIndex].name}"
         </button>

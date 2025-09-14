@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { type taskType } from "../assets/taskList";
 
 interface DisplayTaskTotalProps {
@@ -27,27 +27,24 @@ export default function DisplayTaskTotal({
     }
   };
 
-  if (!visibleTask) {
-    return <p className="text-lg font-semibold">🎉 All {taskFilter} tasks done!</p>;
-  }
+  const allTaskComplete = filteredTasks.every((task) => task.completed);
+  const completedCount = filteredTasks.filter((task) => task.completed).length;
 
   return (
     <div className="h-full">
       <button
-        className={`mt-2 px-4 py-2 rounded w-full h-[60vh] ${
-          visibleTask.completed ? "bg-red-500" : "bg-green-500"
-        } text-white`}
+        className="mt-2 px-4 py-2 rounded w-full h-[60vh] text-white"
         onClick={() => handleClick(visibleTask.taskId)}
+        disabled={allTaskComplete}
       >
-      <h3 className="text-xl font-semibold">{visibleTask.name}</h3>
-      <p>{visibleTask.description}</p>
-      <p className={`${visibleTask.frequency === "daily" && "text-green-200" || visibleTask.frequency === "weekly" && "text-yellow-200" || visibleTask.frequency === "monthly" && "text-purple-200"}  `}>{visibleTask.frequency}</p>
-      
-      <h3 className="pt-5 animate-pulse"> Click to complete </h3>
+        <h3 className="text-xl font-semibold">{visibleTask.name}</h3>
+        <p>{visibleTask.description}</p>
+        <p className="animate-pulse pt-12 text-green-200">
+          Click when complete
+        </p>
       </button>
-
       <p className="mt-2 text-md text-gray-400">
-        Task {currentIndex + 1} of {filteredTasks.length}
+        Task {completedCount} of {filteredTasks.length}
       </p>
     </div>
   );
