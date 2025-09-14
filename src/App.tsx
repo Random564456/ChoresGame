@@ -1,138 +1,124 @@
-import { useState } from 'react'
-import type { Clock } from 'clock';
-// If you have a Clock implementation, import it here. Otherwise, you can use a placeholder or remove related code.
-// Example placeholder implementation:
-import './App.css'
-import clock from 'clock';
+import { useState } from "react";
+import "./App.css";
+// import type { Clock } from "clock";
+// import clock from "clock";
+import taskList, { type taskListType } from "./assets/taskList";
+import DisplayTaskTotal from "./components/DisplayTaskTotal";
 
 type completeTaskTypes = (task_id: number) => void;
 
-
-
 function App() {
+  const initialTaskList = taskList;
+  const [tasks, setTasks] = useState<taskListType>(initialTaskList);
+  const [filter, setFilter] = useState<"daily" | "weekly" | "monthly">("daily");
 
-  
-  const [dailyTaskCompleted, setDailyTaskCompleted] = useState<taskList>()
-  const [weeklyTaskCompleted, setWeeklyTaskCompleted] = useState<taskList>()
-  const [monthlyTaskCompleted, setMonthlyTaskCompleted] = useState<taskList>()
+  const [currentIndex, setCurrentIndex] = useState(0);
 
+  const totalAmountofDailyTasks = taskList.filter(
+    (task) => task.frequency === "daily"
+  ).length;
+  const completedDailyTasks =
+    tasks?.filter((task) => task.frequency === "daily" && task.completed)
+      .length || 0;
 
+  const totalAmountofWeeklyTasks = taskList.filter(
+    (task) => task.frequency === "weekly"
+  ).length;
+  const completedWeeklyTasks =
+    tasks?.filter((task) => task.frequency === "weekly" && task.completed)
+      .length || 0;
 
-  const totalAmountofDailyTasks = taskList.filter(task => task.frequency === 'daily').length;
-  const completedDailyTasks = dailyTaskCompleted?.filter(task => task.frequency === 'daily' && task.completed).length || 0;
-
-  const totalAmountofWeeklyTasks = taskList.filter(task => task.frequency === 'weekly').length;
-  const completedWeeklyTasks = weeklyTaskCompleted?.filter(task => task.frequency === 'weekly' && task.completed).length || 0;
-
-  const totalAmountofMonthlyTasks = taskList.filter(task => task.frequency === 'monthly').length;
-  const completedMonthlyTasks = monthlyTaskCompleted?.filter(task => task.frequency === 'monthly' && task.completed).length || 0;
-
-  const totalTasks = taskList.length;
-  const completedTasks = dailyTaskCompleted?.filter(task => task.completed).length || 0;
-
-
-
+  const totalAmountofMonthlyTasks = taskList.filter(
+    (task) => task.frequency === "monthly"
+  ).length;
+  const completedMonthlyTasks =
+    tasks?.filter((task) => task.frequency === "monthly" && task.completed)
+      .length || 0;
 
   const completeTask: completeTaskTypes = (task_id) => {
-    for (const task of taskList) {
-      if (task.taskId === task_id && task.completed) {
-        switch (task.frequency) {
-          case 'daily':
-            if (completedDailyTasks >= 20) return;
-            setDailyTaskCompleted(prevTasks =>
-              prevTasks?.map(task =>
-                task.taskId === task_id ? { ...task, completed: false } : task
-              )
-            );
-            break;
-          case 'weekly':
-            if (completedWeeklyTasks >= 20) return;
-            setWeeklyTaskCompleted(prevTasks =>
-              prevTasks?.map(task =>
-                task.taskId === task_id ? { ...task, completed: false } : task
-              )
-            );
-            break;
-          case 'monthly':
-            if (completedMonthlyTasks >= 20) return;
-            setMonthlyTaskCompleted(prevTasks =>
-              prevTasks?.map(task =>
-                task.taskId === task_id ? { ...task, completed: false } : task
-              )
-            );
-            break;
-          default:
-            break;
-        }
-      }
-    setDailyTaskCompleted(prevTasks =>
-      prevTasks?.map(task =>
-        task.taskId === task_id ? { ...task, completed: true } : task
-      )
-    );
-  }
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.taskId !== task_id) return t;
 
-}
+        const toggleCompleted = !t.completed;
+
+        // if completing → set dateCompleted
+        // if undoing → reset to null
+        return {
+          ...t,
+          completed: toggleCompleted,
+          dateCompleted: toggleCompleted ? new Date() : null,
+        };
+      })
+    );
+  };
 
   return (
     <>
       {/* 
-        Display task complete / total 
-          Dont allow more than 20 task in a 7 day cycle
-      */}
-      <div>
-        <h1 className="text-3xl font-bold underline">
-          Chores Game
-        </h1>
-        <p>Daily Tasks Completed: {completedDailyTasks} / {totalAmountofDailyTasks}</p>
-        <p>Weekly Tasks Completed: {completedWeeklyTasks} / {totalAmountofWeeklyTasks}</p>
-        <p>Monthly Tasks Completed: {completedMonthlyTasks} / {totalAmountofMonthlyTasks}</p>
-        <p>Total Tasks Completed: {completedTasks} / {totalTasks}</p>
+          Display task complete / total 
+            Dont allow more than 20 task in a 7 day cycle
+        */}
+      <div className="flex flex-col justify-self-center w-[80vw] mb-3">
+        <section className="flex w-full justify-evenly text-xs text-center gap-12 pb-4">
+          <p>
+            Daily: <br />
+            {completedDailyTasks} / {totalAmountofDailyTasks}
+          </p>
+          <p>
+            Weekly: <br />
+            {completedWeeklyTasks} / {totalAmountofWeeklyTasks}
+          </p>
+          <p>
+            Monthly: <br />
+            {completedMonthlyTasks} / {totalAmountofMonthlyTasks}
+          </p>
+        </section>
       </div>
 
       {/* 
-        Display task description
-          onClick: completeTask(task_id)
-      */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Tasks</h2>
-        <ul>
-          {taskList.map(task => (
-            <li key={task.taskId} className="mb-2">
-              <div className="p-4 border rounded shadow">
-                <h3 className="text-xl font-semibold">{task.name}</h3>
-                <p>{task.description}</p>
-                <p>Category: {task.category}</p>
-                <p>Frequency: {task.frequency}</p>
-                <p>Status: {task.completed ? 'Completed' : 'Incomplete'}</p>
-                <button
-                  className={`mt-2 px-4 py-2 rounded ${task.completed ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
-                  onClick={() => completeTask(task.taskId)}
-                  disabled={task.completed}
-                >
-                  {task.completed ? 'Undo Complete' : 'Complete Task'}
-                </button>
-              </div>
-            </li>
+          Display task description
+            onClick: completeTask(task_id)
+        */}
+      <div className="flex flex-col justify-center h-[690px]">
+        <div className="flex flex-row justify-center gap-4">
+          {["daily", "weekly", "monthly"].map((option) => (
+            <div>
+              <button
+                className="w-[25vw] rounded bg-blue-500 text-white"
+                onClick={() =>
+                  setFilter(option as "daily" | "weekly" | "monthly")
+                }
+              >
+                {option}
+              </button>
+            </div>
           ))}
-        </ul>
+        </div>
+        <DisplayTaskTotal
+          completeTask={completeTask}
+          tasks={tasks}
+          taskFilter={filter}
+          setCurrentIndex={setCurrentIndex}
+          currentIndex={currentIndex}
+        />
       </div>
 
       {/* 
-        Display button if other person completed task 
-          onClick: completeTask(task_id)
-      */}
+          Display button if other person completed task 
+            onClick: completeTask(task_id)
+        */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">Other User Actions</h2>
+        <h2 className="text-2xl font-bold mb-2">Other User Actions</h2>
         <button
           className="mt-2 px-4 py-2 rounded bg-blue-500 text-white"
           onClick={() => completeTask(1)} // Example: Other user completed task with ID 1
         >
-          Other User Completed "Clean kitchen counters"
+          Somone Else Completed "{tasks[currentIndex].name}"
         </button>
       </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
