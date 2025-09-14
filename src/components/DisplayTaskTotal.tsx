@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { type taskType } from "../assets/taskList";
 
 interface DisplayTaskTotalProps {
